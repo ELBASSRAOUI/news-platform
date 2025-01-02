@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créer un Article</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container my-5">
+        <h1 class="text-center mb-4">Créer un Nouvel Article</h1>
+        <form id="create-news-form">
+            <div class="form-group">
+                <label for="title">Titre</label>
+                <input type="text" id="title" class="form-control" placeholder="Titre de l'article" required>
+            </div>
+            <div class="form-group">
+                <label for="summary">Résumé</label>
+                <textarea id="summary" class="form-control" rows="3" placeholder="Résumé de l'article" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="image">Image (URL)</label>
+                <input type="url" id="image" class="form-control" placeholder="Lien de l'image" required>
+            </div>
+            <div class="form-group">
+                <label for="link">Lien vers l'article complet</label>
+                <input type="url" id="link" class="form-control" placeholder="Lien de l'article complet" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Créer l'Article</button>
+        </form>
+        <div class="mt-4 text-center">
+            <a href="index.html" class="btn btn-secondary">Retour à la Liste des Articles</a>
+        </div>
+    </div>
+    <script src="create-news.js"></script>
+</body>
+</html>
