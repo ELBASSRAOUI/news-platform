@@ -1,108 +1,61 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Créer un Article - News App</title>
+    <title>Create Article</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <!-- Barre de navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="/">News App</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/news.html">Articles</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="/create.html">Créer</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Contenu principal -->
-    <main class="container mt-4">
-        <h1 class="text-center mb-4">Créer un Nouvel Article</h1>
-
-        <!-- Formulaire pour créer un article -->
-        <form id="create-article-form">
+    <div class="container mt-5">
+        <h1>Create Article</h1>
+        <form id="createArticleForm">
             <div class="mb-3">
-                <label for="title" class="form-label">Titre de l'article</label>
-                <input type="text" class="form-control" id="title" placeholder="Entrez le titre de l'article" required>
+                <label for="title" class="form-label">Title</label>
+                <input type="text" id="title" class="form-control" required>
             </div>
             <div class="mb-3">
-                <label for="summary" class="form-label">Résumé</label>
-                <textarea class="form-control" id="summary" rows="3" placeholder="Écrivez un résumé de l'article" required></textarea>
+                <label for="body" class="form-label">Body</label>
+                <textarea id="body" class="form-control" rows="5" required></textarea>
             </div>
             <div class="mb-3">
-                <label for="image" class="form-label">URL de l'image</label>
-                <input type="url" class="form-control" id="image" placeholder="Entrez l'URL de l'image" required>
+                <label for="imageUrl" class="form-label">Image URL</label>
+                <input type="text" id="imageUrl" class="form-control" required>
             </div>
-            <div class="mb-3">
-                <label for="link" class="form-label">Lien vers l'article complet</label>
-                <input type="url" class="form-control" id="link" placeholder="Entrez le lien de l'article complet" required>
-            </div>
-            <div class="text-center">
-                <button type="submit" class="btn btn-primary">Créer l'article</button>
-            </div>
+            <button type="submit" class="btn btn-primary">Create Article</button>
         </form>
+        <div id="error-message" class="mt-3"></div>
+    </div>
 
-        <!-- Section pour afficher des messages -->
-        <div id="message-container" class="mt-4"></div>
-    </main>
-
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Gestionnaire pour soumettre le formulaire
-        document.getElementById('create-article-form').addEventListener('submit', async (event) => {
+        document.getElementById('createArticleForm').addEventListener('submit', async (event) => {
             event.preventDefault();
 
             const title = document.getElementById('title').value;
-            const summary = document.getElementById('summary').value;
-            const image = document.getElementById('image').value;
-            const link = document.getElementById('link').value;
+            const body = document.getElementById('body').value;
+            const imageUrl = document.getElementById('imageUrl').value;
+
+            const article = { title, body, imageUrl };
 
             try {
-                const response = await fetch('/api/news', {
+                const response = await fetch('http://localhost:3000/api/news', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ title, summary, image, link })
+                    body: JSON.stringify(article),
                 });
 
-                const result = await response.json();
-
-                if (response.ok) {
-                    showMessage('Article créé avec succès !', 'success');
-                    document.getElementById('create-article-form').reset();
-                } else {
-                    showMessage(result.message || 'Une erreur est survenue.', 'danger');
+                if (!response.ok) {
+                    throw new Error('Failed to create article');
                 }
+
+                // Rediriger vers la page des articles après la création
+                window.location.href = 'index.html';
             } catch (error) {
-                console.error('Erreur:', error);
-                showMessage('Impossible de créer l\'article. Veuillez réessayer plus tard.', 'danger');
+                document.getElementById('error-message').textContent = error.message;
             }
         });
-
-        // Fonction pour afficher des messages
-        function showMessage(message, type) {
-            const container = document.getElementById('message-container');
-            container.innerHTML = `
-                <div class="alert alert-${type}" role="alert">
-                    ${message}
-                </div>
-            `;
-        }
     </script>
 </body>
 </html>

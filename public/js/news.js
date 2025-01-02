@@ -1,52 +1,49 @@
-// Fonction pour récupérer les derniers articles
-async function fetchLatestNews() {
+const articleContainer = document.getElementById("articleContainer");
+
+const articles = [
+    {
+        id: 1,
+        title: "Article 1",
+        body: "This is the first article. It provides an overview of the latest news.",
+        imageUrl: "https://via.placeholder.com/600x300"
+    },
+    {
+        id: 2,
+        title: "Article 2",
+        body: "This is the second article, covering detailed insights.",
+        imageUrl: "https://via.placeholder.com/600x300"
+    },
+    {
+        id: 3,
+        title: "Article 3",
+        body: "Learn more about this amazing topic in our third article.",
+        imageUrl: "https://via.placeholder.com/600x300"
+    }
+];
+
+const urlParams = new URLSearchParams(window.location.search);
+const articleId = parseInt(urlParams.get('id'), 10);
+
+function displayArticle() {
     try {
-        const response = await fetch('/api/news'); // Assurez-vous que cette route est correcte
-        const data = await response.json();
-        
-        if (response.ok) {
-            displayNews(data.posts); // Affiche les articles récupérés
-        } else {
-            showError('Erreur lors du chargement des articles');
+        const article = articles.find(a => a.id === articleId);
+        if (!article) {
+            throw new Error("Article not found.");
         }
-    } catch (error) {
-        console.error('Erreur:', error);
-        showError('Impossible de charger les articles');
-    }
-}
 
-// Fonction pour afficher les articles
-function displayNews(news) {
-    const container = document.getElementById('news-container');
-    container.innerHTML = '';  // Vider le conteneur avant de l'afficher
-
-    if (news.length === 0) {
-        container.innerHTML = '<p>Aucun article disponible.</p>';
-        return;
-    }
-
-    news.forEach(article => {
         const articleHTML = `
-            <div class="col-md-4">
-                <div class="card">
-                    <img src="${article.imageUrl}" class="card-img-top" alt="${article.title}">
-                    <div class="card-body">
-                        <h5 class="card-title">${article.title}</h5>
-                        <p class="card-text">${article.body}</p>
-                        <a href="/news/${article.id}" class="btn btn-primary">Lire la suite</a>
-                    </div>
+            <div class="card">
+                <img src="${article.imageUrl}" class="card-img-top" alt="${article.title}">
+                <div class="card-body">
+                    <h5 class="card-title">${article.title}</h5>
+                    <p class="card-text">${article.body}</p>
                 </div>
             </div>
         `;
-        container.innerHTML += articleHTML;
-    });
+        articleContainer.innerHTML = articleHTML;
+    } catch (error) {
+        articleContainer.innerHTML = `<p style="color: red;">${error.message}</p>`;
+    }
 }
 
-// Fonction pour afficher les erreurs
-function showError(message) {
-    const errorContainer = document.getElementById('error-message');
-    errorContainer.innerHTML = `<div class="alert alert-danger">${message}</div>`;
-}
-
-// Appeler la fonction pour récupérer et afficher les articles à chaque chargement de la page
-document.addEventListener('DOMContentLoaded', fetchLatestNews);
+displayArticle();

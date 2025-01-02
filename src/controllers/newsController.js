@@ -1,94 +1,66 @@
-const axios = require('axios');
-const { validationResult } = require('express-validator'); // Pour les validations
+const Joi = require('joi');
+const news = []; // Tableau fictif pour les news
 
-const DUMMY_JSON_URL = 'https://dummyjson.com/posts';
+// Validation des données de la news
+const newsSchema = Joi.object({
+  title: Joi.string().min(3).max(100).required(),
+  body: Joi.string().min(5).max(1000).required(),
+  imageUrl: Joi.string().uri().required(),
+});
 
-const newsController = {
-    // Récupérer tous les articles
-    async getAllNews(req, res) {
-        try {
-            const response = await axios.get(DUMMY_JSON_URL);
-            res.status(200).json(response.data);
-        } catch (error) {
-            console.error('Erreur lors de la récupération des articles:', error.message);
-            res.status(500).json({ message: 'Erreur serveur' });
-        }
-    },
-
-    // Récupérer un article par son ID
-    async getNewsById(req, res) {
-        const { id } = req.params;
-        try {
-            const response = await axios.get(`${DUMMY_JSON_URL}/${id}`);
-            if (response.data) {
-                res.status(200).json(response.data);
-            } else {
-                res.status(404).json({ message: 'Article non trouvé' });
-            }
-        } catch (error) {
-            console.error('Erreur lors de la récupération de l\'article:', error.message);
-            res.status(500).json({ message: 'Erreur serveur' });
-        }
-    },
-
-    // Créer un nouvel article
-    async createNews(req, res) {
-        const { title, body } = req.body;
-
-        // Validation des données d'entrée
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
-
-        try {
-            const response = await axios.post(DUMMY_JSON_URL, { title, body });
-            res.status(201).json(response.data);
-        } catch (error) {
-            console.error('Erreur lors de la création de l\'article:', error.message);
-            res.status(500).json({ message: 'Erreur serveur' });
-        }
-    },
-
-    // Modifier un article existant
-    async updateNews(req, res) {
-        const { id } = req.params;
-        const { title, body } = req.body;
-
-        // Validation des données d'entrée
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
-
-        try {
-            const response = await axios.put(`${DUMMY_JSON_URL}/${id}`, { title, body });
-            if (response.data) {
-                res.status(200).json(response.data);
-            } else {
-                res.status(404).json({ message: 'Article non trouvé' });
-            }
-        } catch (error) {
-            console.error('Erreur lors de la mise à jour de l\'article:', error.message);
-            res.status(500).json({ message: 'Erreur serveur' });
-        }
-    },
-
-    // Supprimer un article
-    async deleteNews(req, res) {
-        const { id } = req.params;
-        try {
-            const response = await axios.delete(`${DUMMY_JSON_URL}/${id}`);
-            if (response.data) {
-                res.status(200).json({ message: 'Article supprimé avec succès' });
-            } else {
-                res.status(404).json({ message: 'Article non trouvé' });
-            }
-        } catch (error) {
-            console.error('Erreur lors de la suppression de l\'article:', error.message);
-            res.status(500).json({ message: 'Erreur serveur' });
-        }
-    }
+// Fonction pour obtenir toutes les news
+const getAllNews = (req, res) => {
+  res.json(news);
 };
 
-module.exports = newsController;
+// Fonction pour obtenir une news par ID
+const getNewsById = (req, res) => {
+  const newsItem = news.find(n => n.id === parseInt(req.params.id));
+  if (!newsItem) return res.status(404).json({ message: 'News non trouvée' });
+  res.json(newsItem);
+};
+
+// Fonction pour créer une news
+const createNews = (req, res) => {
+  const { error } = newsSchema.validate(req.body);
+  if (error) return res.status(400).json({ message: error.details[0].message });
+
+  const newNews = {
+    id: news.length + 1,
+    ...req.body,
+  };
+  news.push(newNews);
+  res.status(201).json(newNews);
+};
+
+// Fonction pour mettre à jour une news
+const updateNews = (req, res) => {
+  const { error } = newsSchema.validate(req.body);
+  if (error) return res.status(400).json({ message: error.details[0].message });
+
+  const newsItem = news.find(n => n.id === parseInt(req.params.id));
+  if (!newsItem) return res.status(404).json({ message: 'News non trouvée' });
+
+  newsItem.title = req.body.title;
+  newsItem.body = req.body.body;
+  newsItem.imageUrl = req.body.imageUrl;
+
+  res.json(newsItem);
+};
+
+// Fonction pour supprimer une news
+const deleteNews = (req, res) => {
+  const newsIndex = news.findIndex(n => n.id === parseInt(req.params.id));
+  if (newsIndex === -1) return res.status(404).json({ message: 'News non trouvée' });
+
+  news.splice(newsIndex, 1);
+  res.status(204).send();
+};
+
+module.exports = {
+  createNews,
+  getAllNews,
+  getNewsById,
+  updateNews,
+  deleteNews,
+};

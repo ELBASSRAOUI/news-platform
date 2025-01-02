@@ -1,76 +1,61 @@
-// Fonction pour récupérer et afficher les derniers articles
-async function fetchLatestNews() {
-    try {
-        const response = await fetch('/api/news'); // Remplacez par l'URL réelle de votre API
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+// main.js
+document.addEventListener('DOMContentLoaded', function () {
+    // Fonction pour charger les articles
+    function loadArticles() {
+        fetch('/api/news') // URL de l'API pour obtenir les articles
+            .then(response => response.json()) // Convertir la réponse en JSON
+            .then(articles => {
+                const newsContainer = document.getElementById('newsContainer');
+                newsContainer.innerHTML = ''; // Vider le conteneur avant de le remplir
 
-        const data = await response.json();
-        if (data.posts && data.posts.length > 0) {
-            displayNews(data.posts);
-        } else {
-            showError("Aucun article disponible pour le moment.");
-        }
-    } catch (error) {
-        console.error('Erreur:', error);
-        showError("Impossible de charger les articles. Veuillez réessayer plus tard.");
+                // Vérifier si des articles existent
+                if (articles.length === 0) {
+                    const errorMessage = document.getElementById('error-message');
+                    errorMessage.textContent = 'No articles found!';
+                } else {
+                    // Parcourir chaque article et l'ajouter au conteneur
+                    articles.forEach(article => {
+                        const articleDiv = document.createElement('div');
+                        articleDiv.classList.add('col-md-4', 'mb-4');
+                        articleDiv.innerHTML = `
+                            <div class="card animate__animated animate__fadeIn">
+                                <div class="card-body">
+                                    <h5 class="card-title">${article.title}</h5>
+                                    <p class="card-text">${article.body}</p>
+                                    <a href="edit.html?id=${article.id}" class="btn btn-primary">Edit</a>
+                                    <button class="btn btn-danger" onclick="deleteArticle(${article.id})">Delete</button>
+                                </div>
+                            </div>
+                        `;
+                        newsContainer.appendChild(articleDiv);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching articles:', error);
+                const errorMessage = document.getElementById('error-message');
+                errorMessage.textContent = 'Failed to load articles.';
+            });
+    }
+
+    // Appel de la fonction pour charger les articles au chargement de la page
+    loadArticles();
+});
+
+// Fonction pour supprimer un article
+function deleteArticle(id) {
+    if (confirm('Are you sure you want to delete this article?')) {
+        fetch(`/api/news/${id}`, {
+            method: 'DELETE',  // Méthode HTTP pour supprimer
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert('Article deleted successfully!');
+            location.reload();  // Recharger la page après suppression
+        })
+        .catch(error => {
+            console.error('Error deleting article:', error);
+            alert('Failed to delete article.');
+        });
     }
 }
-
-// Fonction pour afficher les articles dans la page
-function displayNews(news) {
-    const container = document.getElementById('news-container');
-    container.innerHTML = ''; // Vider le conteneur avant d'ajouter de nouveaux articles
-
-    news.forEach((post) => {
-        // Création d'une colonne pour chaque article
-        const col = document.createElement('div');
-        col.className = 'col-md-4';
-
-        // Structure de la carte Bootstrap pour l'article
-        col.innerHTML = `
-            <div class="card h-100 shadow-sm">
-                <img src="${post.image}" class="card-img-top" alt="${post.title}">
-                <div class="card-body">
-                    <h5 class="card-title">${post.title}</h5>
-                    <p class="card-text">${post.summary}</p>
-                    <a href="${post.link}" class="btn btn-primary">Lire la suite</a>
-                </div>
-            </div>
-        `;
-
-        // Ajout de la colonne dans le conteneur
-        container.appendChild(col);
-    });
-}
-
-// Fonction pour afficher un message d'erreur
-function showError(message) {
-    const errorDiv = document.getElementById('error-message');
-    errorDiv.textContent = message;  // Met à jour le texte du message d'erreur
-    errorDiv.style.display = 'block'; // Affiche l'alerte d'erreur
-}
-
-// Fonction pour récupérer et afficher les derniers articles
-async function fetchLatestNews() {
-    const spinner = document.getElementById('loading-spinner');
-    spinner.style.display = 'block'; // Afficher le spinner de chargement
-
-    try {
-        const response = await fetch('/api/news');
-        if (!response.ok) {
-            throw new Error('Erreur lors de la récupération des articles');
-        }
-        const data = await response.json();
-        displayNews(data.posts);
-    } catch (error) {
-        console.error('Erreur:', error);
-        showError('Impossible de charger les articles');  // Affiche l'erreur
-    } finally {
-        spinner.style.display = 'none'; // Masque le spinner de chargement
-    }
-}
-
-// Initialisation
-document.addEventListener('DOMContentLoaded', fetchLatestNews);
